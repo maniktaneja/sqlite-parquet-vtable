@@ -31,7 +31,7 @@ bool ParquetCursor::currentRowGroupSatisfiesRowIdFilter(Constraint& constraint) 
   }
 }
 
-bool ParquetCursor::currentRowGroupSatisfiesBlobFilter(Constraint& constraint, std::shared_ptr<parquet::RowGroupStatistics> _stats) {
+bool ParquetCursor::currentRowGroupSatisfiesBlobFilter(Constraint& constraint, std::shared_ptr<parquet::Statistics> _stats) {
   if(!_stats->HasMinMax()) {
     return true;
   }
@@ -48,8 +48,8 @@ bool ParquetCursor::currentRowGroupSatisfiesBlobFilter(Constraint& constraint, s
   parquet::Type::type pqType = types[constraint.column];
 
   if(pqType == parquet::Type::BYTE_ARRAY) {
-    parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::BYTE_ARRAY>>* stats =
-      (parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::BYTE_ARRAY>>*)_stats.get();
+    parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::BYTE_ARRAY>>* stats =
+      (parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::BYTE_ARRAY>>*)_stats.get();
 
     minPtr = stats->min().ptr;
     minLen = stats->min().len;
@@ -137,9 +137,9 @@ bool ParquetCursor::currentRowGroupSatisfiesBlobFilter(Constraint& constraint, s
   }
 }
 
-bool ParquetCursor::currentRowGroupSatisfiesTextFilter(Constraint& constraint, std::shared_ptr<parquet::RowGroupStatistics> _stats) {
-  parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::BYTE_ARRAY>>* stats =
-    (parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::BYTE_ARRAY>>*)_stats.get();
+bool ParquetCursor::currentRowGroupSatisfiesTextFilter(Constraint& constraint, std::shared_ptr<parquet::Statistics> _stats) {
+  parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::BYTE_ARRAY>>* stats =
+    (parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::BYTE_ARRAY>>*)_stats.get();
 
   if(!stats->HasMinMax()) {
     return true;
@@ -195,7 +195,7 @@ int64_t int96toMsSinceEpoch(const parquet::Int96& rv) {
   return nsSinceEpoch;
 }
 
-bool ParquetCursor::currentRowGroupSatisfiesIntegerFilter(Constraint& constraint, std::shared_ptr<parquet::RowGroupStatistics> _stats) {
+bool ParquetCursor::currentRowGroupSatisfiesIntegerFilter(Constraint& constraint, std::shared_ptr<parquet::Statistics> _stats) {
   if(!_stats->HasMinMax()) {
     return true;
   }
@@ -211,27 +211,27 @@ bool ParquetCursor::currentRowGroupSatisfiesIntegerFilter(Constraint& constraint
   parquet::Type::type pqType = types[column];
 
   if(pqType == parquet::Type::INT32) {
-    parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::INT32>>* stats =
-      (parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::INT32>>*)_stats.get();
+    parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::INT32>>* stats =
+      (parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::INT32>>*)_stats.get();
 
     min = stats->min();
     max = stats->max();
   } else if(pqType == parquet::Type::INT64) {
-    parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::INT64>>* stats =
-      (parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::INT64>>*)_stats.get();
+    parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::INT64>>* stats =
+      (parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::INT64>>*)_stats.get();
 
     min = stats->min();
     max = stats->max();
   } else if(pqType == parquet::Type::INT96) {
-    parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::INT96>>* stats =
-      (parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::INT96>>*)_stats.get();
+    parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::INT96>>* stats =
+      (parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::INT96>>*)_stats.get();
 
     min = int96toMsSinceEpoch(stats->min());
     max = int96toMsSinceEpoch(stats->max());
 
   } else if(pqType == parquet::Type::BOOLEAN) {
-    parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::BOOLEAN>>* stats =
-      (parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::BOOLEAN>>*)_stats.get();
+    parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::BOOLEAN>>* stats =
+      (parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::BOOLEAN>>*)_stats.get();
 
     min = stats->min();
     max = stats->max();
@@ -272,7 +272,7 @@ bool ParquetCursor::currentRowGroupSatisfiesIntegerFilter(Constraint& constraint
   return true;
 }
 
-bool ParquetCursor::currentRowGroupSatisfiesDoubleFilter(Constraint& constraint, std::shared_ptr<parquet::RowGroupStatistics> _stats) {
+bool ParquetCursor::currentRowGroupSatisfiesDoubleFilter(Constraint& constraint, std::shared_ptr<parquet::Statistics> _stats) {
   if(!_stats->HasMinMax()) {
     return true;
   }
@@ -288,14 +288,14 @@ bool ParquetCursor::currentRowGroupSatisfiesDoubleFilter(Constraint& constraint,
   parquet::Type::type pqType = types[column];
 
   if(pqType == parquet::Type::DOUBLE) {
-    parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::DOUBLE>>* stats =
-      (parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::DOUBLE>>*)_stats.get();
+    parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::DOUBLE>>* stats =
+      (parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::DOUBLE>>*)_stats.get();
 
     min = stats->min();
     max = stats->max();
   } else if(pqType == parquet::Type::FLOAT) {
-    parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::FLOAT>>* stats =
-      (parquet::TypedRowGroupStatistics<parquet::DataType<parquet::Type::FLOAT>>*)_stats.get();
+    parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::FLOAT>>* stats =
+      (parquet::TypedStatistics<parquet::PhysicalType<parquet::Type::FLOAT>>*)_stats.get();
 
     min = stats->min();
     max = stats->max();
@@ -527,7 +527,7 @@ bool ParquetCursor::currentRowGroupSatisfiesFilter() {
     } else {
       std::unique_ptr<parquet::ColumnChunkMetaData> md = rowGroupMetadata->ColumnChunk(column);
       if(md->is_stats_set()) {
-        std::shared_ptr<parquet::RowGroupStatistics> stats = md->statistics();
+        std::shared_ptr<parquet::Statistics> stats = md->statistics();
 
         // SQLite is much looser with types than you might expect if you
         // come from a Postgres background. The constraint '30.0' (that is,
@@ -544,8 +544,8 @@ bool ParquetCursor::currentRowGroupSatisfiesFilter() {
           rv = stats->num_values() > 0;
         } else {
           parquet::Type::type pqType = types[column];
-
-          if(pqType == parquet::Type::BYTE_ARRAY && logicalTypes[column] == parquet::LogicalType::UTF8) {
+          // Changed from UTF8 to STRING - Manik
+          if(pqType == parquet::Type::BYTE_ARRAY && logicalTypes[column] == parquet::LogicalType::Type::STRING) {
             rv = currentRowGroupSatisfiesTextFilter(constraints[i], stats);
           } else if(pqType == parquet::Type::BYTE_ARRAY) {
             rv = currentRowGroupSatisfiesBlobFilter(constraints[i], stats);
@@ -609,12 +609,12 @@ start:
   }
 
   while(logicalTypes.size() < (unsigned int)rowGroupMetadata->num_columns()) {
-    logicalTypes.push_back(rowGroupMetadata->schema()->Column(0)->logical_type());
+   logicalTypes.push_back(rowGroupMetadata->schema()->Column(0)->logical_type()->type());
   }
 
   for(unsigned int i = 0; i < (unsigned int)rowGroupMetadata->num_columns(); i++) {
     types[i] = rowGroupMetadata->schema()->Column(i)->physical_type();
-    logicalTypes[i] = rowGroupMetadata->schema()->Column(i)->logical_type();
+    logicalTypes[i] = rowGroupMetadata->schema()->Column(i)->logical_type()->type();
   }
 
   for(unsigned int i = 0; i < colRows.size(); i++) {
@@ -664,7 +664,8 @@ bool ParquetCursor::currentRowSatisfiesFilter() {
       rv = !isNull(column);
     } else {
 
-      if(logicalTypes[column] == parquet::LogicalType::UTF8) {
+      // Changed from UTF8 to String - Manik
+      if(logicalTypes[column] == parquet::LogicalType::Type::STRING) {
         rv = currentRowSatisfiesTextFilter(constraints[i]);
       } else {
         parquet::Type::type pqType = types[column];
@@ -928,7 +929,7 @@ parquet::Type::type ParquetCursor::getPhysicalType(int col) {
   return types[col];
 }
 
-parquet::LogicalType::type ParquetCursor::getLogicalType(int col) {
+parquet::LogicalType::Type::type ParquetCursor::getLogicalType(int col) {
   return logicalTypes[col];
 }
 

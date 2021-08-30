@@ -66,35 +66,35 @@ std::string ParquetTable::CreateStatement() {
     std::string type;
 
     parquet::Type::type physical = col->physical_type();
-    parquet::LogicalType::type logical = col->logical_type();
+    parquet::LogicalType::Type::type logical = col->logical_type()->type();
     // Be explicit about which types we understand so we don't mislead someone
     // whose unsigned ints start getting interpreted as signed. (We could
     // support this for UINT_8/16/32 -- and for UINT_64 we could throw if
     // the high bit was set.)
-    if(logical == parquet::LogicalType::NONE ||
-        logical == parquet::LogicalType::UTF8 ||
-        logical == parquet::LogicalType::DATE ||
-        logical == parquet::LogicalType::TIME_MILLIS ||
-        logical == parquet::LogicalType::TIMESTAMP_MILLIS ||
-        logical == parquet::LogicalType::TIME_MICROS ||
-        logical == parquet::LogicalType::TIMESTAMP_MICROS ||
-        logical == parquet::LogicalType::INT_8 ||
-        logical == parquet::LogicalType::INT_16 ||
-        logical == parquet::LogicalType::INT_32 ||
-        logical == parquet::LogicalType::INT_64) {
+    if(logical == parquet::LogicalType::Type::NONE ||
+        logical == parquet::LogicalType::Type::STRING ||
+        logical == parquet::LogicalType::Type::DATE ||
+        logical == parquet::LogicalType::TimeUnit::unit::MILLIS ||
+        logical == parquet::LogicalType::Type::TIMESTAMP ||
+        //logical == parquet::LogicalType::Type::TIME_MICROS ||
+        //logical == parquet::LogicalType::Type::TIMESTAMP_MICROS ||
+        logical == parquet::LogicalType::Type::INT /*||
+        //logical == parquet::LogicalType::Type::INT_16 ||
+        //logical == parquet::LogicalType::Type::INT_32 ||
+        logical == parquet::LogicalType::Type::INT_64 */) {
       switch(physical) {
         case parquet::Type::BOOLEAN:
           type = "TINYINT";
           break;
         case parquet::Type::INT32:
-          if(logical == parquet::LogicalType::NONE ||
-              logical == parquet::LogicalType::INT_32) {
+          if(logical == parquet::LogicalType::Type::NONE ||
+              logical == parquet::LogicalType::Type::INT) {
             type = "INT";
-          } else if(logical == parquet::LogicalType::INT_8) {
+          }  /* else if(logical == parquet::LogicalType::INT_8) {
             type = "TINYINT";
           } else if(logical == parquet::LogicalType::INT_16) {
             type = "SMALLINT";
-          }
+          } */
           break;
         case parquet::Type::INT96:
           // INT96 is used for nanosecond precision on timestamps; we truncate
@@ -109,7 +109,7 @@ std::string ParquetTable::CreateStatement() {
           type = "DOUBLE";
           break;
         case parquet::Type::BYTE_ARRAY:
-          if(logical == parquet::LogicalType::UTF8) {
+          if(logical == parquet::LogicalType::Type::STRING) {
             type = "TEXT";
           } else {
             type = "BLOB";
@@ -126,7 +126,7 @@ std::string ParquetTable::CreateStatement() {
     if(type.empty()) {
       std::ostringstream ss;
       ss << __FILE__ << ":" << __LINE__ << ": column " << i << " has unsupported type: " <<
-        parquet::TypeToString(physical) << "/" << parquet::LogicalTypeToString(logical);
+        parquet::TypeToString(physical) << "/" /*<< parquet::LogicalTypeToString(logical) */;
 
       throw std::invalid_argument(ss.str());
     }
