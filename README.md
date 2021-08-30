@@ -1,65 +1,31 @@
 # sqlite-parquet-vtable
 
-[![Build Status](https://travis-ci.org/cldellow/sqlite-parquet-vtable.svg?branch=master)](https://travis-ci.org/cldellow/sqlite-parquet-vtable)
-[![codecov](https://codecov.io/gh/cldellow/sqlite-parquet-vtable/branch/master/graph/badge.svg)](https://codecov.io/gh/cldellow/sqlite-parquet-vtable)
+This is a fork of  cldellow/sqlite-parquet-vtable. I have update this code to
+build with the latest release of libarrow and libparquet. Steps to install as
+follows :
 
-A SQLite [virtual table](https://sqlite.org/vtab.html) extension to expose Parquet files as SQL tables. You may also find [csv2parquet](https://github.com/cldellow/csv2parquet/) useful.
+- Install and build libarrow and libparquet cpp. See : https://arrow.apache.org/install/
 
-This [blog post](https://cldellow.com/2018/06/22/sqlite-parquet-vtable.html) provides some context on why you might use this.
+- Make sure you build and install parquet-cpp, by enabling the parquet build
+: cmake . -DARROW_PARQUET=ON
 
-## Installing
-
-### Download
-
-You can fetch a version built for Ubuntu 16.04 at https://s3.amazonaws.com/cldellow/public/libparquet/libparquet.so.xz
-
-### Building
+- The build the parquet vtable
 
 ```
-./make-linux
+gcc -std=c++11  -g -I. -I<path to sqlite> -I /usr/local/include/arrow/  -fPIC -shared parquet.cc parquet_cursor.cc parquet_filter.cc parquet_table.cc -lz -lcrypto -lssl -lparquet -larrow -o libparquet.so
 ```
 
-The first run will git clone a bunch of libraries, patch them to be statically linkable and build them.
+### Note that these steps are for Centos7, I haven't yet tested with any other platform
 
-Subsequent builds will only build the parquet virtual table extension.
-
-### Building (release)
-
-Run `./make-linux-pgo` to build an instrumented binary, run tests to collect real-life usage samples, then build an optimized binary. PGO seems to give a 5-10% reduction in query times.
-
-### Tests
-
-Run:
+To test :
 
 ```
-tests/create-queries-from-templates
-tests/test-all
+sqlite> .load parquet/libparquet
+sqlite> CREATE VIRTUAL TABLE census USING parquet('./userdata1.parquet');
+select * from census limit 1;
+1454486129000|1|Amanda|Jordan|ajordan0@com.com|Female|1.197.201.2|6759521864920116|Indonesia|3/8/1971|49756.53|Internal Auditor|1E+02
 ```
 
-
-## Use
-
-```
-$ sqlite/sqlite3
-sqlite> .load build/linux/libparquet
-sqlite> CREATE VIRTUAL TABLE demo USING parquet('parquet-generator/99-rows-1.parquet');
-sqlite> SELECT * FROM demo;
-...if all goes well, you'll see data here!...
-```
-
-Note: if you get an error like:
-
-```
-sqlite> .load build/linux/libparquet
-Error: parquet/libparquet.so: wrong ELF class: ELFCLASS64
-```
-
-You have the 32-bit SQLite installed. To fix this, do:
-
-```
-sudo apt-get remove --purge sqlite3
-sudo apt-get install sqlite3:amd64
-```
 
 ## Supported features
 
